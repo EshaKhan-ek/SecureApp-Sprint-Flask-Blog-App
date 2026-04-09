@@ -93,7 +93,7 @@ pre {
     
 <div id="issue-0">
 <div class="issue-block issue-sev-high">
-    <b>flask_debug_true: </b> A Flask app appears to be run with debug=True, which exposes the Werkzeug debugger and allows the execution of arbitrary code.<br>
+    <b>flask_debug_true: </b> A Flask app appears to be run with debug=False, which exposes the Werkzeug debugger and allows the execution of arbitrary code.<br>
     <b>Test ID:</b> B201<br>
     <b>Severity: </b>HIGH<br>
     <b>Confidence: </b>MEDIUM<br>
@@ -105,7 +105,7 @@ pre {
 <div class="code">
 <pre>
 5	if __name__ == &#x27;__main__&#x27;:
-6	    app.run(debug=True)
+6	    app.run(debug=False)
 </pre>
 </div>
 

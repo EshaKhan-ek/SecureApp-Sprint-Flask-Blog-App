@@ -1,3 +1,4 @@
+from urllib.parse import urlparse
 from flask import render_template, url_for, flash, redirect, request, Blueprint
 from flask_login import login_user, current_user, logout_user, login_required
 from flaskblog import db, bcrypt
@@ -33,15 +34,17 @@ def login():
         user = User.query.filter_by(email=form.email.data).first()
         if user and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user, remember=form.remember.data)
-            next_page = request.args.get('next')
-            return redirect(next_page) if next_page else redirect(url_for('main.home'))
+	        next_page = request.args.get('next')
+	        if next_page and urlparse(next_page).netloc == '':
+        	    return redirect(next_page)
+       		 return redirect(url_for('main.home'))
         else:
             flash('Login Unsuccessful. Please check email and password', 'danger')
     return render_template('login.html', title='Login', form=form)
 
 
 @users.route("/logout")
-def logout():
+def logout()
     logout_user()
     return redirect(url_for('main.home'))
 
