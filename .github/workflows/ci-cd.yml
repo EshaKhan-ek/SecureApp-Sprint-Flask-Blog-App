@@ -1,10 +1,6 @@
 name: DevSecOps-Pipeline
 
-on:
-  push:
-    branches: [ "feature/ci-cd-pipeline", "main", "develop" ]
-  pull_request:
-    branches: [ "feature/ci-cd-pipeline", "main", "develop" ]
+on: [push, pull_request]
 
 jobs:
   security-scan:
@@ -22,4 +18,5 @@ jobs:
         run: pip install bandit
 
       - name: Run SAST Scan
-        run: bandit -r . -ll -x ./Python-Snippets,./venv
+        # This excludes the legacy folders causing syntax errors
+        run: bandit -r . -ll -x ./venv,./Closure,./Combinations-Permutations,./For_Else,./Generators,./Idempotence,./List_Comp,./Memoization,./Mutable,./NamedTuples,./Python,./Slicing,./Str_Repr,./String\ Interpolation
