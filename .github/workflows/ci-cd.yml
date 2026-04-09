@@ -6,7 +6,7 @@ jobs:
   security-scan:
     runs-on: ubuntu-latest
     permissions:
-      security-events: write  # Required for CodeQL to upload results
+      security-events: write  # Allows CodeQL to upload alerts
       actions: read
       contents: read
 
@@ -24,13 +24,8 @@ jobs:
           pip install bandit
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      # Optional: Add your 'pytest' command here if you have unit tests
-      # - name: Run Unit Tests
-      #   run: pytest
-
       - name: Run SAST Scan (Bandit)
-        # We are explicitly excluding the venv and several sub-folders causing issues
-        run: bandit -r . -ll -i -x ./venv,./Python-Unit-Testing,./Python,./Slicing,./Str_Repr,./String_Interpolation
+        run: bandit -r . -ll -i -x ./venv,./Closure,./Combinations-Permutations,./For_Else,./Generators,./Idempotence,./List_Comp,./Memoization,./Mutable,./NamedTupl
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
@@ -39,3 +34,19 @@ jobs:
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
+
+      - name: Fail if High/Critical Alerts Exist
+        # This fulfills the "Must Fail" requirement by checking the API for open alerts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Query open alerts with 'high' or 'critical' severity
+          count=$(gh api repos/${{ github.repository }}/code-scanning/alerts?state=open \
+            --jq '[.[] | select(.rule.security_severity_level == "high" or .rule.security_severity_level == "critical")] | length')
+          
+          if [ "$count" -gt 0 ]; then
+            echo " CRITICAL FAILURE: $count High/Critical vulnerabilities remain open."
+            exit 1
+          else
+            echo " All clear: No high-severity vulnerabilities detected."
+          fi
