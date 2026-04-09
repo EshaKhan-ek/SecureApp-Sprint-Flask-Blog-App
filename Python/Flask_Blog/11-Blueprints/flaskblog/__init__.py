@@ -40,5 +40,12 @@ def create_app(config_class=Config):
     app.register_blueprint(users)
     app.register_blueprint(posts)
     app.register_blueprint(main)
+     # ---------------- Clickjacking Protection ----------------
+    @app.after_request
+    def set_security_headers(response):
+        response.headers['X-Frame-Options'] = 'DENY'
+        response.headers['Content-Security-Policy'] = "frame-ancestors 'none'"
+        return response
+    # ---------------------------------------------------------
 
     return app
