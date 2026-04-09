@@ -1,10 +1,6 @@
 name: DevSecOps-Pipeline
 
-on:
-  push:
-    branches: [ "develop", "main" ]
-  pull_request:
-    branches: [ "develop" ]
+on: [push, pull_request]
 
 jobs:
   security-scan:
@@ -21,6 +17,5 @@ jobs:
       - name: Install Bandit
         run: pip install bandit
 
-      - name: Run SAST Scan (Bandit)
-        # This scans your code and fails the pipeline if high issues exist
+      - name: Run SAST Scan
         run: bandit -r . -ll -ii
