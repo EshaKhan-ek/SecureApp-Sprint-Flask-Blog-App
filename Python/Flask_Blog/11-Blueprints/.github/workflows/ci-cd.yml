@@ -1,6 +1,10 @@
 name: DevSecOps-Pipeline
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [ "feature/ci-cd-pipeline", "main", "develop" ]
+  pull_request:
+    branches: [ "feature/ci-cd-pipeline", "main", "develop" ]
 
 jobs:
   security-scan:
