@@ -5,6 +5,11 @@ on: [push, pull_request]
 jobs:
   security-scan:
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write  # Required for CodeQL to upload results
+      actions: read
+      contents: read
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -14,9 +19,23 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install Bandit
-        run: pip install bandit
+      - name: Install Dependencies
+        run: |
+          pip install bandit
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: Run SAST Scan
-        # This excludes the legacy folders causing syntax errors
-        run: bandit -r . -ll -x ./venv,./Closure,./Combinations-Permutations,./For_Else,./Generators,./Idempotence,./List_Comp,./Memoization,./Mutable,./NamedTuples,./Python,./Slicing,./Str_Repr,./String\ Interpolation
+      # Optional: Add your 'pytest' command here if you have unit tests
+      # - name: Run Unit Tests
+      #   run: pytest
+
+      - name: Run SAST Scan (Bandit)
+        # This will FAIL the pipeline if Medium or High vulnerabilities are found
+        run: bandit -r . -ll -x ./venv,./Closure,./Combinations-Permutations,./For_Else,./Generators,./Idempotence,./List_Comp,./Memoization,./Mutable,./NamedTupl
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: python
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
