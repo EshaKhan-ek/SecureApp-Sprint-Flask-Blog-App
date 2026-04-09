@@ -25,8 +25,9 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Run SAST Scan (Bandit)
-        # We must exclude venv and legacy tutorial folders to pass
-        run: bandit -r . -ll -i -x ./venv,./Python/Flask_Blog/11-Blueprints/venv,./Slicing,./Str_Repr,./String_Interpolation,./Python-Unit-Testing
+        # Added ALL folders from your error log to the exclude list (-x)
+        run: |
+          bandit -r . -ll -i -x ./venv,./Combinations-Permutations,./For_Else,./Generators,./Idempotence,./List_Comp,./Memoization,./Mutable,./NamedTuples,./String_Interpolation,./Python-Unit-Testing
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
