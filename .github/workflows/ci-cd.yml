@@ -23,14 +23,12 @@ jobs:
         run: |
           pip install bandit pytest
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          # Requirement: Pipeline must include 'test'
-          pytest || echo "No tests found, skipping..."
+          pytest || echo "No tests found"
 
       - name: Run SAST Scan (Bandit)
-        # -r: Specific path target kiya taake venv ignore ho jaye
-        # -lll: Sirf High/Critical check karega
-        # --exit-zero hata diya taake critical milne par pipeline FAIL ho jaye
-        run: bandit -r ./Python/Flask_Blog/11-Blueprints -lll
+        # --exclude venv lagana LAZMI hai taake libraries scan na hon
+        # -lll se sirf High severity par pipeline FAIL hogi
+        run: bandit -r . -lll --exclude ./venv
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
@@ -41,12 +39,11 @@ jobs:
         uses: github/codeql-action/analyze@v3
 
       - name: Run DAST (ZAP Baseline Scan)
-        # Requirement: Pipeline must include DAST (ZAP)
         uses: zaproxy/action-baseline@v0.12.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           target: 'http://localhost:5000'
-          fail_action: true # Critical issue par pipeline FAIL hogi
+          fail_action: true
 
       - name: Fail if High/Critical Alerts Exist (CodeQL)
         env:
