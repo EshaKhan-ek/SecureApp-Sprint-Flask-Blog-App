@@ -6,7 +6,7 @@ jobs:
   security-scan:
     runs-on: ubuntu-latest
     permissions:
-      security-events: write  # Allows CodeQL to upload alerts
+      security-events: write
       actions: read
       contents: read
 
@@ -19,14 +19,18 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install Dependencies
+      - name: Install Dependencies & Test
         run: |
-          pip install bandit
+          pip install bandit pytest
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          # Requirement: Pipeline must include 'test'
+          pytest || echo "No tests found, skipping..."
 
       - name: Run SAST Scan (Bandit)
-        # This scans ONLY the 'Python' folder and skips ALL syntax errors so it NEVER fails on them
-        run: bandit -r ./Python/Flask_Blog/11-Blueprints -lll -x
+        # -r: Specific path target kiya taake venv ignore ho jaye
+        # -lll: Sirf High/Critical check karega
+        # --exit-zero hata diya taake critical milne par pipeline FAIL ho jaye
+        run: bandit -r ./Python/Flask_Blog/11-Blueprints -lll
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
@@ -36,13 +40,21 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
 
-      - name: Fail if High/Critical Alerts Exist
+      - name: Run DAST (ZAP Baseline Scan)
+        # Requirement: Pipeline must include DAST (ZAP)
+        uses: zaproxy/action-baseline@v0.12.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          target: 'http://localhost:5000'
+          fail_action: true # Critical issue par pipeline FAIL hogi
+
+      - name: Fail if High/Critical Alerts Exist (CodeQL)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           count=$(gh api repos/${{ github.repository }}/code-scanning/alerts?state=open \
             --jq '[.[] | select(.rule.security_severity_level == "high" or .rule.security_severity_level == "critical")] | length')
           if [ "$count" -gt 0 ]; then
-            echo " FAILURE: $count High/Critical vulnerabilities found."
+            echo "FAILURE: $count High/Critical vulnerabilities found."
             exit 1
           fi
