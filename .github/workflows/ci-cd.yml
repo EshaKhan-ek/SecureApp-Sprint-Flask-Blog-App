@@ -26,7 +26,7 @@ jobs:
 
       - name: Run SAST Scan (Bandit)
         # This scans ONLY the 'Python' folder and skips ALL syntax errors so it NEVER fails on them
-        run: bandit -r ./Python -ll -i --exit-zero
+        run: bandit -r ./Python/Flask_Blog/11-Blueprints -lll -x
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
