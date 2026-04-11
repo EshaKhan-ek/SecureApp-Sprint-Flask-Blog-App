@@ -17,21 +17,22 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10' # Python version thora downgrade kiya Compatibility ke liye
+          python-version: '3.11'
 
       - name: Install Dependencies & Setup App
         run: |
-          # Is version mein TimedJSONWebSignatureSerializer lazmi hota hai
-          pip install itsdangerous==1.1.0 
-          pip install werkzeug==2.0.3 # Flask compatibility fix
-          pip install bandit pytest flask==2.0.1 flask-sqlalchemy flask-bcrypt flask-login flask-mail flask-wtf email_validator
+          # Sabse stable versions jo is error ko khatam kar denge
+          pip install "SQLAlchemy<2.0" "itsdangerous<2.1" "Werkzeug<2.1"
+          pip install flask==2.0.1 flask-sqlalchemy==2.5.1 flask-bcrypt flask-login flask-mail flask-wtf email_validator bandit pytest
           
           export SECRET_KEY="supersecretkey123"
           export SQLALCHEMY_DATABASE_URI="sqlite:///site.db"
           cd Python/Flask_Blog/11-Blueprints
+          
+          # Database create karein aur app background mein start karein
           python3 -c "from flaskblog import create_app, db; app = create_app(); app.app_context().push(); db.create_all()"
           python3 run.py & 
-          sleep 10
+          sleep 7
 
       - name: Run SAST Scan (Bandit)
         run: bandit -r ./Python/Flask_Blog/11-Blueprints -lll --exit-zero
