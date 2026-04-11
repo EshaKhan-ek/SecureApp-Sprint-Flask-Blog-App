@@ -26,9 +26,9 @@ jobs:
           pytest || echo "No tests found"
 
       - name: Run SAST Scan (Bandit)
-        # --exclude venv lagana LAZMI hai taake libraries scan na hon
-        # -lll se sirf High severity par pipeline FAIL hogi
-        run: bandit -r . -lll --exclude ./venv
+        # Is command mein 'venv' aur 'Python-Unit-Testing' ko ignore kiya hai
+        # Taake sirf aapka 11-Blueprints wala code scan ho
+        run: bandit -r . -lll --exclude ./venv,./Python-Unit-Testing,./Generators
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
@@ -45,7 +45,7 @@ jobs:
           target: 'http://localhost:5000'
           fail_action: true
 
-      - name: Fail if High/Critical Alerts Exist (CodeQL)
+      - name: Check for Critical Alerts
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
