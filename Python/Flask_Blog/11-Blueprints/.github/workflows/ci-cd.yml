@@ -33,7 +33,7 @@ jobs:
       - name: Run SAST Scan (Bandit)
         # -lll means fail ONLY on High Severity. 
         # Agar issues fix nahi kar sakte toh --exit-zero add kar dein
-        run: bandit -r . -lll --exclude ./venv -x 
+        run: bandit -r ./Python/Flask_Blog/11-Blueprints -lll -x
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
